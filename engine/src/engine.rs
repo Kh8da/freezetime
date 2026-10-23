@@ -154,10 +154,10 @@ impl Engine {
         self.rules
     }
 
-    pub fn set_rules(&mut self, rules: Rules) -> Vec<Action> {
+    pub fn set_rules(&mut self, rules: Rules, now: u64) -> Vec<Action> {
         self.rules = rules;
         let mut out = Vec::new();
-        self.sync_music(&mut out);
+        self.sync_music(now, &mut out);
         out
     }
 
@@ -167,6 +167,7 @@ impl Engine {
 
     pub fn on_payload(&mut self, p: &Payload, now: u64) -> Vec<Action> {
         let mut out = Vec::new();
+        let wall = now;
         self.last_payload = Some(now);
         self.last_rejected = None;
         // Match and session times come from the game's own timestamp (the same
@@ -242,7 +243,7 @@ impl Engine {
             out.push(Action::Notify { title, body });
         }
 
-        self.sync_music(&mut out);
+        self.sync_music(wall, &mut out);
         out
     }
 
@@ -264,9 +265,9 @@ impl Engine {
         if self.play_since.is_some() && now.saturating_sub(self.last_in_match) >= BREAK_GAP_SECS {
             self.play_since = None;
         }
-        if gone {
-            self.sync_music(&mut out);
-        }
+        // CS2 sends a heartbeat every 10 seconds, so a silent CS2 is gone (closed
+        // mid-round, crashed): don't leave the music paused until the session ends.
+        self.sync_music(now, &mut out);
         out
     }
 
@@ -322,8 +323,8 @@ impl Engine {
         }
     }
 
-    fn sync_music(&mut self, out: &mut Vec<Action>) {
-        let connected = self.last_payload.is_some();
+    fn sync_music(&mut self, now: u64, out: &mut Vec<Action>) {
+        let connected = self.last_payload.is_some_and(|t| now.saturating_sub(t) < CONNECTED_SECS);
         let want = self.rules.music && connected && self.tracker.in_live_round();
         if want != self.music_paused {
             self.music_paused = want;

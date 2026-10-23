@@ -173,13 +173,16 @@ fn turning_music_control_off_mid_round_resumes_and_back_on_pauses() {
     let t = ts(&parse(live));
     assert_eq!(e.on_payload(&parse(live), t), vec![Action::PauseMusic]);
     let off = Rules { music: false, ..Rules::default() };
-    assert_eq!(e.set_rules(off), vec![Action::ResumeMusic]);
+    assert_eq!(e.set_rules(off, t), vec![Action::ResumeMusic]);
     assert!(e.on_payload(&parse(live), t + 1).is_empty());
-    assert_eq!(e.set_rules(Rules::default()), vec![Action::PauseMusic]);
+    assert_eq!(e.set_rules(Rules::default(), t + 2), vec![Action::PauseMusic]);
+    // Turned on again long after CS2 went quiet: nothing to pause.
+    e.set_rules(off, t + 3);
+    assert!(e.set_rules(Rules::default(), t + 600).is_empty());
 }
 
 #[test]
-fn cs2_closing_mid_round_resumes_music_and_ends_the_session() {
+fn cs2_closing_mid_round_resumes_music_quickly_and_ends_the_session_later() {
     let mut e = fresh();
     let mut sim = Sim::new("t", T0);
     feed(&mut e, &sim.match_("de_dust2", 13, 4).take());
@@ -192,9 +195,12 @@ fn cs2_closing_mid_round_resumes_music_and_ends_the_session() {
     feed(&mut e, &raw);
     let last = ts(&parse(raw.last().unwrap()));
     assert!(e.live(last).music_paused);
-    assert!(e.tick(last + 60).is_empty(), "a minute of silence is not CS2 closing");
+    assert!(e.tick(last + 15).is_empty(), "a gap shorter than a heartbeat changes nothing");
+    // Half a minute without even a heartbeat: CS2 is gone, the music comes back.
+    assert_eq!(e.tick(last + 30), vec![Action::ResumeMusic]);
+    assert!(e.tick(last + 60).is_empty());
     let acts = e.tick(last + GONE_SECS);
-    assert!(acts.contains(&Action::ResumeMusic));
+    assert!(!acts.contains(&Action::ResumeMusic), "resumed once, not twice");
     assert!(acts.iter().any(|a| matches!(a, Action::Notify { title, .. } if title == "Session recap")));
     let live = e.live(last + GONE_SECS);
     assert!(!live.connected && live.session.is_none());

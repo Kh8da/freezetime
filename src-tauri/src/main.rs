@@ -266,7 +266,7 @@ fn set_prefs(app: AppHandle, state: State<AppState>, prefs: Prefs) -> Result<(),
         state.store.save_settings(&s)?;
     }
     state.sink.sound.store(prefs.sound, Ordering::Relaxed);
-    state.svc.with(|e| e.set_rules(rules));
+    state.svc.with(|e| e.set_rules(rules, now()));
     sync_tray_music(&app, rules.music);
     if prefs.autostart != autostart::enabled() {
         autostart::set(prefs.autostart)?;
@@ -331,7 +331,7 @@ fn toggle_music_from_tray(app: &AppHandle) {
         let _ = state.store.save_settings(&s);
         s.rules
     };
-    state.svc.with(|e| e.set_rules(rules));
+    state.svc.with(|e| e.set_rules(rules, now()));
     sync_tray_music(app, rules.music);
     let _ = app.emit("prefs-changed", ());
 }
