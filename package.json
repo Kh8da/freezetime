@@ -1,0 +1,17 @@
+{
+  "name": "freezetime",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.3"
+  },
+  "description": "Music auto-pause, tilt warnings, break reminders and session recaps for CS2.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kh8da/freezetime"
+  }
+}

@@ -1,0 +1,17 @@
+{
+	"provider": {
+		"name": "Counter-Strike: Global Offensive",
+		"appid": 730,
+		"version": 14054,
+		"steamid": "76561198012345678",
+		"timestamp": 1761215100
+	},
+	"player": {
+		"steamid": "76561198012345678",
+		"name": "kh8da",
+		"activity": "menu"
+	},
+	"auth": {
+		"token": "0123456789abcdef0123456789abcdef"
+	}
+}

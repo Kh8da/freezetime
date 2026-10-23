@@ -1,0 +1,101 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: tests (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Unit and sequence tests
+        run: cargo test -p engine
+
+      - name: End-to-end test against a fake CS2
+        run: |
+          cargo build --release -p harness
+          ./target/release/harness
+
+      - name: Clippy
+        run: cargo clippy -p engine -p harness --all-targets -- -D warnings
+
+  windows:
+    name: windows build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Unit and sequence tests
+        run: cargo test -p engine
+
+      - name: End-to-end test against a fake CS2
+        shell: bash
+        run: |
+          cargo build --release -p harness
+          ./target/release/harness
+
+      - name: Build app
+        run: npx tauri build --no-bundle
+
+      # A fixed name, so README links to releases/latest/download/... always work.
+      - name: Collect exe
+        shell: bash
+        run: |
+          mkdir dist
+          cp target/release/freezetime.exe dist/freezetime-windows-x64.exe
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: freezetime-windows
+          path: dist/*
+          if-no-files-found: error
+
+  # Releases are published only by pushing a tag like v0.1.0, after the build
+  # has been tried with the real game. The tag has to match the app's version.
+  release:
+    needs: [test, windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag matches version
+        run: |
+          want="v$(jq -r .version src-tauri/tauri.conf.json)"
+          if [ "$want" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME doesn't match tauri.conf.json version $want"
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: freezetime ${{ github.ref_name }}
+          body_path: .github/release-notes.md
+          files: dist/*

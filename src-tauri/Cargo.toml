@@ -1,0 +1,22 @@
+[package]
+name = "freezetime"
+version = "0.1.0"
+description = "Music auto-pause, tilt warnings, break reminders and session recaps for CS2."
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/Kh8da/freezetime"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+engine = { path = "../engine" }
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+windows = { version = "0.62", features = ["Foundation", "Foundation_Collections", "Media_Control", "UI_Notifications", "Data_Xml_Dom", "Win32_UI_Shell"] }

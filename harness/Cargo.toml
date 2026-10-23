@@ -1,0 +1,21 @@
+[package]
+name = "harness"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "End-to-end test of freezetime against a fake CS2."
+
+[[bin]]
+name = "harness"
+path = "src/main.rs"
+
+[[bin]]
+name = "fake-cs2"
+path = "src/bin/fake-cs2.rs"
+
+[dependencies]
+engine = { path = "../engine" }
+
+[[bin]]
+name = "seed"
+path = "src/bin/seed.rs"

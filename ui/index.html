@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>freezetime</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="titlebar" data-tauri-drag-region>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 14 14" aria-hidden="true">
+        <circle class="ring" cx="7" cy="7" r="5.6"/>
+        <path class="arc" d="M7 1.4A5.6 5.6 0 0 1 12.6 7"/>
+        <rect x="5" y="4.6" width="1.3" height="4.8" rx="0.4"/>
+        <rect x="7.7" y="4.6" width="1.3" height="4.8" rx="0.4"/>
+      </svg>
+      <span>freezetime</span>
+    </div>
+    <div class="window-buttons">
+      <button class="icon-btn" id="btn-min" data-tip="minimize" aria-label="Minimize">
+        <svg viewBox="0 0 16 16"><path d="M3.5 8h9"/></svg>
+      </button>
+      <button class="icon-btn close" id="btn-close" data-tip="hide to tray" aria-label="Hide to tray">
+        <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist">
+    <button role="tab" data-view="session" aria-selected="true">session<kbd>1</kbd></button>
+    <button role="tab" data-view="history" aria-selected="false">history<kbd>2</kbd></button>
+    <button role="tab" data-view="settings" aria-selected="false">settings<kbd>3</kbd></button>
+  </nav>
+
+  <main id="main" tabindex="-1"></main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="tip" id="tip" role="tooltip"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
