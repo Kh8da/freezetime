@@ -12,7 +12,7 @@ jobs:
     name: tests (linux)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -33,11 +33,11 @@ jobs:
     name: windows build
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -63,10 +63,17 @@ jobs:
           cp target/release/freezetime.exe dist/freezetime-windows-x64.exe
           ls -la dist
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: freezetime-windows
           path: dist/*
+          if-no-files-found: error
+
+      # For trying the app without CS2. Never part of a release.
+      - uses: actions/upload-artifact@v5
+        with:
+          name: fake-cs2-windows
+          path: target/release/fake-cs2.exe
           if-no-files-found: error
 
   # Releases are published only by pushing a tag like v0.1.0, after the build
@@ -78,7 +85,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Tag matches version
         run: |
@@ -88,10 +95,10 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
+          name: freezetime-windows
           path: dist
-          merge-multiple: true
 
       - uses: softprops/action-gh-release@v2
         with:
